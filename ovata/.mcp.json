@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ovata": {
+      "type": "http",
+      "url": "https://platform-api.ovata.tw/mcp"
+    }
+  }
+}

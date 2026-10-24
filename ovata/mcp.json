@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "ovata": {
+      "type": "streamable-http",
+      "url": "https://platform-api.ovata.tw/mcp"
+    }
+  }
+}

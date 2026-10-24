@@ -1,0 +1,20 @@
+{
+  "name": "ovata",
+  "interface": {
+    "displayName": "Ovata"
+  },
+  "plugins": [
+    {
+      "name": "ovata",
+      "source": {
+        "source": "local",
+        "path": "./ovata"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

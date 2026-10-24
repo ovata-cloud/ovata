@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ovata",
+  "version": "1.0.0",
+  "description": "Ovata 網站擁有者的 AI 工具：連上 Ovata MCP，照「測試站 → 確認 → 正式站」修改網站，並正確使用網站後端的 SDK。",
+  "author": {
+    "name": "Ovata",
+    "url": "https://ovata.tw"
+  },
+  "homepage": "https://ovata.tw",
+  "keywords": ["ovata", "website", "ecommerce", "mcp"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Ovata",
+        "shortDescription": "修改你的 Ovata 網站：先放上測試站，確認後再上線。",
+        "longDescription": "管理商品、文章與頁面內容，修改網站程式並放上測試站，確認後發布正式站；不會 Git 也能用。",
+        "developerName": "Ovata",
+        "category": "Productivity",
+        "defaultPrompt": "列出我的 Ovata 網站，帶我修改網站：先放上測試站給我看，我確認後再上線。"
+      }
+    }
+  }
+}
