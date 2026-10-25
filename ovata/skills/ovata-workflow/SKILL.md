@@ -28,6 +28,8 @@ description: 幫 Ovata 網站的擁有者修改網站時的整體流程：先分
 
 ## 改程式：一定照這個順序
 
+新增頁面、重做首頁或改導覽時，先讀 ovata-site-code 的「規劃頁面與導覽」，按訪客任務分頁。完整選購、購買說明、品牌故事各有獨立頁面；首頁聚焦品牌選擇理由、熱賣／精選商品與清楚入口，不把所有內容堆在首頁。
+
 1. 改程式並存成一個版本：有 Git 就 commit、push；沒有 Git 就用 `write_files`（見 ovata-site-code）。
 2. 建置並放上測試站：`prepare_version` → `prepare_candidate` → `deploy_test_tag`。開發途中想先看效果，可以用 `build_preview` 直接更新測試站。
 3. 請她檢查測試站：把 `get_site` 的 `test_site.url` 給她，說明這次改了什麼、要點哪裡看，請她在電腦和手機上都看一次。測試站用測試金流，不會真的扣款。
