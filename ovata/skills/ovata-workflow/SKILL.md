@@ -58,7 +58,7 @@ description: 幫使用者在 Codex 或 Claude Code 對話整理建站需求，�
 
 MCP 只會發布上過測試站的版本（或以前上線過的版本，用來退回）；沒上過會回 `NOT_ON_TEST_SITE`。
 
-正式發布需要連線有「部署到正式環境」的權限。被拒絕（`insufficient_scope`）時，請她在開發工具重新連線，並在同意頁勾選「也允許部署到正式環境」。
+正式發布需要連線有「部署到正式環境」的權限，現在的連線都有。舊連線被拒絕（`insufficient_scope`）時，請她在開發工具重新連線，同意頁按「允許連線」就好。
 
 ## 測試站和正式站是兩份資料
 
@@ -72,7 +72,7 @@ MCP 只會發布上過測試站的版本（或以前上線過的版本，用來�
 - 正式站壞了：`deploy_release` 上一個正式版 tag（`rollback_tag`，或 `get_project` 的 `recent_releases`），不用重新建置。
 - 建置失敗：看 `get_project(project_id, build_id)` 的 `error`，修好程式後用新的 `request_id` 再建一次。
 - 結果不明（逾時、`outcome_unknown`）：先讀回目前狀態再決定，不要直接重送。
-- 工具錯誤 `SITE_FEATURE_UNAVAILABLE`、`ROLE_FORBIDDEN`、`NOT_IN_CONNECTION`、`AUTHZ_PENDING` 跟連線無關，重新連線也沒用；照錯誤訊息說明給她聽。
+- 工具錯誤 `NOT_IN_CONNECTION` 是舊連線只選了部分網站：請她重新連線，新的連線包含所有網站。`SITE_FEATURE_UNAVAILABLE`、`ROLE_FORBIDDEN`、`AUTHZ_PENDING` 跟連線無關，重新連線也沒用；照錯誤訊息說明給她聽。
 
 ## 把原始報表交給 Ovata
 
