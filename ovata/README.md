@@ -5,11 +5,12 @@
 這個 plugin 包含：
 
 - Ovata MCP 連線設定：`https://platform-api.ovata.tw/mcp`（Streamable HTTP，OAuth 登入）。
-- 4 個 skills：
+- 5 個 skills：
   - `ovata-workflow`：整體流程。先分清楚改內容還是改程式；改程式一律測試站 → 擁有者確認 → 正式站。
   - `ovata-site-code`：依訪客任務分頁，規劃首頁與導覽，再取得程式（Git 或不用 Git）、建置、版本、部署與退回。
   - `ovata-web-api`：網站程式怎麼正確呼叫後端（SDK、Web API 版本、金額與狀態規則）。
   - `ovata-site-content`：不改程式就能改的商品、文章、頁面內容與圖片。
+  - `ovata-mail`：讀信、個人草稿與經使用者明確確認的寄信／回覆；需另授權個別信箱。
 
 安裝方式見上一層的 [README](../README.md)。第一次呼叫工具時，瀏覽器會打開 Ovata 的同意頁；要讓 AI 發布正式站，在同意頁勾選「也允許部署到正式環境」。
 

@@ -1,6 +1,6 @@
 {
   "name": "ovata",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Ovata 網站擁有者的 AI 工具：連上 Ovata MCP，照「測試站 → 確認 → 正式站」修改網站，並正確使用網站後端的 SDK。",
   "author": {
     "name": "Ovata",

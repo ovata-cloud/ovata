@@ -1,11 +1,19 @@
 ---
 name: ovata-web-api
-description: Ovata 網站程式呼叫後端（商品、購物車、結帳、付款、配送、會員、文章、頁面內容、投稿、餐廳）的正確做法：只透過 SDK、寫程式前先讀 get_web_api_docs、金額與狀態的規則、版本與升級。寫或修改任何讀寫網站資料的程式前讀這份。
+description: 將網站前端透過 SDK 接上 Ovata 維護的商品、訂單、金流、物流、會員與內容後端；先查 get_web_api_docs、核對能力與版本，缺 API 時列出或委託 Ovata，避免另建業務後端。寫或修改任何讀寫網站資料的前端程式前讀這份。
 ---
 
 # 網站程式怎麼呼叫後端
 
-網站的後端由 Ovata 提供，原始碼不在網站的 repo 裡，你看不到它。後端怎麼運作，一律以 MCP 給的文件為準，不要猜。
+網站的後端與資安由 Ovata 提供並維護，原始碼不在網站的 repo 裡。你負責前端頁面、版面、互動與 SDK 串接，後端怎麼運作一律以 MCP 文件為準。
+
+不要自行實作或另存會員帳號與驗證、訂單、付款、退款、物流或後端權限資料；不能以網站自己的 DB、檔案、瀏覽器持久儲存或第三方服務另做一套業務後端。前端可保留表單輸入及顯示所需的暫存狀態，業務紀錄與成功狀態以 Ovata 後端為準。也不自行接付款商或要求金流金鑰；使用者只在 Console 既有的金流物流設定輸入憑證。
+
+## 先核對功能是否已有支援
+
+把需求逐項對到文件列出的 SDK 呼叫與資料：可直接串接、需要使用者設定、目前缺少 API。商品、會員、訂單、付款、配送與內容能力能用就用，不重做它們。後台資料整理先讀 ovata-site-content；前端讀寫才用這份 SDK 流程。
+
+現有版本沒有需要的能力時，先查文件的版本與升級說明；只有文件明列支援時才升級。仍沒有就列出缺少的輸入／回應、受影響頁面與目前能完成的前端範圍，讓使用者決定暫留或委託 Ovata。自建需求用已同意的 handoff_site_request，既有網站用 request_change；不因查到缺項就自動發包或同意報價。尚未串接的預覽可用清楚標示的示意資料，不製造假 API、假登入、假訂單或付款成功，不能上線成可交易流程。
 
 ## 寫程式前
 
@@ -38,6 +46,7 @@ description: Ovata 網站程式呼叫後端（商品、購物車、結帳、付�
   1. 要運送的購物袋先用 `createShippingClient().options()` 與 `quote(input)` 取得 `quoteId`。
   2. `checkout.confirm({ idempotencyKey, snapshotHash, shipping: { quoteId } })` 建立訂單，回傳要怎麼付款（`kind`：`form`、`redirect`、`manual`，不認得的就帶顧客到訂單頁）。
   3. 付款完回到 `/checkout?order=<id>`，網站一定要有這個頁面：先 `orders.syncPayment(id)`，再 `orders.get(id)` 顯示結果。不要只看網址參數就說付款成功。
+- 會員寄售：`createConsignmentClient()` 查改登入會員自己的寄售、上傳商品照片／私人照片、送審與撤回；先明確升級 `commerce.consignments`。名稱、說明、售價之外要問的（品牌、尺寸、來源、撥款方式…）是商店的商品自訂欄位，勾「寄售會員可填」，表單用 `fields()` 畫、值放 `customFields`；不公開的欄位只有會員本人與後台看得到。會員不可設定審核結果或上架狀態，管理員在 Console「寄售審核」要求補件或核准並上架；審核中與核准後商店也能改資料與售價、補店家照片、排商品圖順序、重新上架，記在寄售的 `events`（`edit` 帶 `changes`），網站在會員的寄售詳情列出。商品清單沿用 `products.list`（單件，`variants[0].stock` 為 0 就是已售出或交易中）。會員自己的寄售有 `sale`：`available` 可售、`pending` 交易中、`sold` 已售出（`soldAt`、`shipTo` 是要寄到的店家地址，沒填為 null）；寄件期限等規則由網站自己寫。審核結果與售出依商店「Email 通知」寄信給會員。分潤與購物金結算不由寄售 API 執行。
 - 會員：`createCustomerClient()` 的 `me()`、`password.login()`、`orders()`、`updateMe()`。
 - 頁面內容：`pages.get(pageKey)` 讀商家在 Console 改的字和圖；哪些欄位可以換，由網站程式用 `pages.sync` 登錄（格式見 `get_backend_api_docs` 的 `pages`）。
 - 自訂欄位：`GET /api/v1/custom-fields?resource=…` 取得網站能用的欄位來畫表單。欄位定義在測試站改，發布時會帶到正式站。

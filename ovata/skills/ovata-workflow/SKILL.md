@@ -1,6 +1,6 @@
 ---
 name: ovata-workflow
-description: 幫 Ovata 網站的擁有者修改網站時的整體流程：先分清楚是改內容還是改程式；改程式一律先放上測試站、請擁有者確認，再發布正式站，並告訴她怎麼退回上一版。對方想改 Ovata 網站、上線、部署或退版時，先讀這份。
+description: 幫使用者在 Codex 或 Claude Code 對話整理建站需求，以 Ovata MCP 保存設定並建立專屬 repo，再設計前端、用 SDK 接 Ovata 後端、測試預覽及確認發布；沒有設計想法、新增網站、改版、上線或委託接手時先讀。
 ---
 
 # 修改 Ovata 網站：先測試站，再正式站
@@ -13,18 +13,37 @@ description: 幫 Ovata 網站的擁有者修改網站時的整體流程：先分
 
 ## 先拿網站資訊
 
-呼叫 `get_started`，帶上 `site_id`（不知道就先 `list_sites`）。它回傳網站名稱、測試站與正式站網址、目前上線的版本、網站程式的 `project_id`，以及這份流程的其他章節。
+呼叫 `get_started`：已有需求帶 `number`，已有網站帶 `site_id`；尚未建立任何需求時可不帶參數，先讀流程與 `skill_routes`。不知道編號就用 `list_requests` 或 `list_sites`。已有網站時會回傳測試站與正式站網址、目前版本與 `project_id`。
+
+## 前端與後端的分工
+
+你負責網站前端、頁面、視覺、互動與 SDK 串接。Ovata 提供並維護資安、會員、商品訂單、金流與物流等複雜後端；讀寫業務資料用既有 MCP 工具，網站運作時透過 ovata-web-api 的 SDK 使用它們。
+
+網站 repo 不另建會員驗證、訂單、金流或物流服務，也不另存這些業務資料。不要要求使用者貼金流金鑰或自行接付款商；金鑰由使用者在 Console 的既有設定操作。需求超出現有 API 時列明缺項與可做的前端範圍，讓使用者決定先保留或委託 Ovata，不能假造 API、付款成功或另做後端補洞。
+
+## 選擇樣板或委託設計
+
+先逐步整理既有需求欄位：用途、功能、品牌資料與來源、風格、色系、可查證賣點與商品，讓使用者確認。可在 Agent 對話進行，已有資料直接沿用，不強迫回 Console 填表。
+
+- 樣板開店：沿用既有電商版型。先 `list_site_templates` 核對功能，`request_site(delivery_mode="self_service", template_id, answers, operation_id)` 保存，再 `create_site_from_request(number)` 建立已選樣板。MCP 僅日常管理，不讀寫網站程式、不建置與發布程式。`get_site` 看架站進度，擁有者檢查測試站後，在 Console 確認同一固定樣板上線。
+- 委託設計：`request_site(delivery_mode="ovata", answers, operation_id)`，由 Ovata 依品牌、購物體驗與行銷目標提案、另行報價。完成交付後才開放擁有者的前台程式管理；送出需求、轉交或付款本身不會立即開放。
+
+電商營運費為當月網站線上收款 1.2%，每月最低 NT$99，取較高者；製作與後續修改另行報價。AI 工具、金流、物流、網域與選配 Mail 依各服務計費，不承諾零元建置。
+
+需要從樣板改為品牌設計，先說明另行報價並取得同意，再 `handoff_site_request`；已上線用 `request_change`。保留同一網站與進度。樣板版型不符或缺功能時不能以直接改 repo、重連 OAuth 或自建後端繞過限制。
+
+以下程式開發流程只適用 `frontend_mode=custom` 且 `check_development` 確認有權限的已交付委託網站。設計與程式一律放網站自己的 repo，先核對 get_project，再規劃與修改。
 
 ## 先分清楚：改內容，還是改程式
 
-| 想改的 | 怎麼改 | 要部署嗎 |
-| --- | --- | --- |
-| 商品、價格、庫存、分類、優惠 | Console，或 `site_backend`（見 ovata-site-content） | 不用 |
-| 文章、留言、投稿 | Console，或文章、留言工具與 `site_backend` | 不用 |
-| 頁面上可換的字、圖、SEO | Console「頁面內容」，或 `site_backend` 的 pages | 不用，存草稿後發布 |
-| 金流、物流、結帳設定 | 請她在 Console「結帳設定」操作，金鑰只能在那裡填 | 不用 |
-| 版面、樣式、新頁面、新功能、修錯 | 改網站程式（見 ovata-site-code） | 要：測試站 → 正式站 |
-| 做不到或沒把握 | `request_change` 請 Ovata 修改 | Ovata 處理 |
+| 想改的                           | 怎麼改                                              | 要部署嗎            |
+| -------------------------------- | --------------------------------------------------- | ------------------- |
+| 商品、價格、庫存、分類、優惠     | Console，或 `site_backend`（見 ovata-site-content） | 不用                |
+| 文章、留言、投稿                 | Console，或文章、留言工具與 `site_backend`          | 不用                |
+| 頁面上可換的字、圖、SEO          | Console「頁面內容」，或 `site_backend` 的 pages     | 不用，存草稿後發布  |
+| 金流、物流、結帳設定             | 請她在 Console「結帳設定」操作，金鑰只能在那裡填    | 不用                |
+| 版面、樣式、新頁面、新功能、修錯 | 改網站程式（見 ovata-site-code）                    | 要：測試站 → 正式站 |
+| 做不到或沒把握                   | `request_change` 請 Ovata 修改                      | Ovata 處理          |
 
 ## 改程式：一定照這個順序
 
@@ -54,6 +73,17 @@ MCP 只會發布上過測試站的版本（或以前上線過的版本，用來�
 - 建置失敗：看 `get_project(project_id, build_id)` 的 `error`，修好程式後用新的 `request_id` 再建一次。
 - 結果不明（逾時、`outcome_unknown`）：先讀回目前狀態再決定，不要直接重送。
 - 工具錯誤 `SITE_FEATURE_UNAVAILABLE`、`ROLE_FORBIDDEN`、`NOT_IN_CONNECTION`、`AUTHZ_PENDING` 跟連線無關，重新連線也沒用；照錯誤訊息說明給她聽。
+
+## 把原始報表交給 Ovata
+
+若店主希望 Ovata 核對或處理原始 XLS／XLSX／CSV，使用需求附件工具，每檔最多 32 MiB：
+
+1. 先用 `list_requests`／`get_request` 確認需求 number。取得她同意提供的原檔，計算完整 SHA-256。
+2. 用 `upload_request_file` 以每段 1 MiB 原始 bytes 轉 base64，上傳時沿用同一 UUID operation_id、檔名、MIME、總大小與 SHA-256，依 next_offset 續傳；24 小時到期，重試同一段保持參數與內容相同。
+3. 收到 complete=true 與 file_id 後，才用 `reply_request` 的 file_ids 附到同一張需求留言。只上傳不會送出留言。
+4. 用 `get_request` 的 files／timeline.files 確認 bfile_ 識別碼，再用 `get_request_file` 依 offset 分段讀回、串接並核對 SHA-256。不要把 base64 或顧客資料印在對話裡。
+
+如果是店主要 agent 直接匯入自己網站的顧客資料，已有 `site_backend` 的 `customerImports` 流程；先讀 ovata-site-content 與該資源文件，在本機解析後上傳來源列、預覽衝突，等店主確認再 commit。附件上傳與顧客匯入是不同操作，不能以附檔當作執行匯入的同意。
 
 ## 不要做
 

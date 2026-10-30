@@ -13,7 +13,7 @@
 ### Codex
 
 ```sh
-codex plugin marketplace add luxira-cloud/ovata
+codex plugin marketplace add ovata-cloud/ovata
 ```
 
 然後在 Codex 輸入 `/plugins`，選 **Ovata** 安裝，再開一個新的對話。ChatGPT 桌面版的 Codex 和 Codex CLI 共用設定，裝好後兩邊都能用。
@@ -21,7 +21,7 @@ codex plugin marketplace add luxira-cloud/ovata
 ### Claude Code
 
 ```text
-/plugin marketplace add luxira-cloud/ovata
+/plugin marketplace add ovata-cloud/ovata
 /plugin install ovata@ovata
 ```
 

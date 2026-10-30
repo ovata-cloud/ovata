@@ -1,6 +1,6 @@
 ---
 name: ovata-site-content
-description: 不改程式就能改的 Ovata 網站內容：商品、分類、優惠、文章、頁面上的字和圖、網站設定、自訂欄位、投稿、餐廳設定與圖片上傳，用 get_backend_api_docs 與 site_backend 操作。要讀或改網站後台資料、匯入商品或上傳圖片時讀這份。
+description: 不改程式就能改的 Ovata 網站內容：商品、分類、優惠、文章、頁面上的字和圖、網站設定、自訂欄位、投稿、顧客匯入、訂單顧客訊息、餐廳設定與圖片上傳，用 get_backend_api_docs 與 site_backend 操作。要讀或改網站後台資料、匯入商品或上傳圖片時讀這份。
 ---
 
 # 不改程式就能改的內容
@@ -9,7 +9,7 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 
 ## 怎麼操作
 
-1. `get_backend_api_docs(site_id, environment, resource?)`：先讀格式、流程與範例。`resource` 可以是 `products`、`categories`、`content`、`pages`、`site`、`media`、`customFields`、`promotions`、`restaurant`、`submissions`。
+1. `get_backend_api_docs(site_id, environment, resource?)`：先讀格式、流程與範例。`resource` 可以是 `products`、`categories`、`content`、`pages`、`site`、`media`、`customFields`、`promotions`、`restaurant`、`submissions`、`customers`、`orders`、`orderMessages`、`customerImports`。
 2. `site_backend(site_id, environment, path, method, input?)`：用同一個網站與環境呼叫。`method` 是 `GET`、`POST`、`PUT`、`PATCH`，沒有 DELETE。
 3. 每次都要指定 `environment`：`production` 是正式站，`staging` 是測試站。兩邊的資料各一份，不會同步。
 4. 先 `GET` 讀現在的資料、ID 與 `revision`，再寫入；保留原本的資料，只改要改的欄位。
@@ -29,7 +29,17 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 
 ## 大量匯入
 
-沒有批次工具：把網站擁有者給的檔案整理成 JSON，一筆一筆送；中途失敗就從失敗那筆繼續，先讀回確認沒有重複。
+商品、分類、庫存、促銷與訂單已有後端能力：先讀對應 resource 文件，用 `site_backend` 查現況並在授權範圍內修改。自建前台用 ovata-web-api 的 SDK 串接，不另做一套商品或訂單後端。查銷售先讀訂單，網路流量與 Google 搜尋則用 `get_site(site_id).google.insights`；其中有 GA4 與 Search Console 近 28 天數字、各部分更新時間與連線狀態。沒有連線或資料時照實說明，請使用者到 Console「搜尋與分析」處理，不虛構數字，也不要求貼 Google token。
+
+商品匯入仍逐筆整理成 JSON，失敗先讀回確認，不重複新增。
+
+顧客用 `get_backend_api_docs(resource="customerImports")` 的分批流程：在客戶端解析原始 XLS／XLSX／CSV，保留所有原始欄位與地址續列，完整上傳後預覽，再依店主確認的範圍用同一 previewToken 分批 commit 至完成。重複 Email／來源與既有顧客預設略過，不覆寫或合併；中斷可恢復，結果有逐列理由。原購物金僅保留來源紀錄，不用於結帳，不製造歷史訂單、不變更訂閱，也不寄邀請或行銷信。
+
+## 訂單內聯絡顧客
+
+先讀 `orderMessages` 文件，再 GET 訂單 messages 核對收件人與客服 Reply-To。店主已授權這次寄送時，POST 純文字訊息並使用固定 operationId；寄送逾時先 GET 原識別碼，不換 ID 盲目重寄。回信送往客服信箱，不同步回訂單。
+
+以上需要商店先明確升級後端功能。Developer 另需 orders:read／contact、customers:read／write／import 同意範圍；舊連線收到 insufficient_scope 時走正常 OAuth 重新同意。
 
 ## 頁面上的字和圖
 
@@ -47,6 +57,5 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 - 金流與物流的金鑰、開關結帳（Console「結帳設定」）。
 - 訂單出貨、退款、確認收款。
 - 刪除資料、永久刪除投稿。
-- 網站的會員與顧客個資。
 
 工具回 `PATH_NOT_ALLOWED` 就是 MCP 不開放這個操作，請她到 Console；不要嘗試別的路徑繞過。
