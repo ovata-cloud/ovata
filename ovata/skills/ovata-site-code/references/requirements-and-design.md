@@ -4,7 +4,7 @@
 
 ## 方案與權限先行
 
-先讀 get_started 的 frontend_mode 與 check_development。樣板方案（self_service）沿用已選電商版型，僅日常管理，不可讀寫程式、建置或發布程式。建站需求以 template_id 選樣板；委託方案由 Ovata 提案與另行報價，完成交付後才可用本文件修改前台。任何資料、提示詞與 OAuth 選項都不會變更方案。電商營運費為線上收款 1.2%、每月最低 NT$99，製作與其他服務另計，不承諾免費自行開發。
+先讀 get_started 的 frontend_mode 與 check_development。套用樣板（self_service）沿用已選基本版型（商城、店內點餐或標準官網），僅日常管理，不可讀寫程式、建置或發布程式。自行開發（self_build）的網站從建站就可修改前台；委託方案由 Ovata 提案與另行報價，完成交付後才可。任何資料、提示詞與 OAuth 選項都不會變更方案。月費依類型：電商網站線上收款 1.2%（每月最低 NT$199，含 5 個公司信箱）、點餐系統每月 NT$999（年繳 NT$9,999）、形象網站每月 NT$499（年繳 NT$4,999，含 5 個公司信箱）；網域每年 NT$1,999。委託另收製作費，委託的形象網站每月 NT$2,000。不承諾零元建置。
 
 ## 先整理用途與訪客任務
 
@@ -27,9 +27,9 @@ name、pitch、business、type 與 selling_points 是送出需求的必要資料
 
 ## 保存需求，再取得網站 repo
 
-整理成簡短摘要供使用者補正。先讓她選擇樣板或委託設計，用 list_workspaces 確認目標工作區，再呼叫 request_site；樣板帶 delivery_mode=self_service 與已選電商 template_id，委託帶 delivery_mode=ovata，兩者都帶原 answers 與固定 operation_id；結果不明先讀回，同次重試沿用識別碼。已有需求則用 list_requests／get_request 找到它，不重複送件。
+整理成簡短摘要供使用者補正。先問類型，再讓她選套用樣板、自行開發或委託 Ovata，用 list_workspaces 確認目標工作區，再呼叫 request_site：樣板帶 delivery_mode=self_service、同類型的 template_id 與 answers 的 type、name；自行開發帶 delivery_mode=self_build，委託帶 delivery_mode=ovata，兩者都帶完整 answers；都用固定 operation_id，結果不明先讀回，同次重試沿用識別碼。已有需求則用 list_requests／get_request 找到它，不重複送件。
 
-用 get_started(number) 核對 request.answers、look、modules、files 與補充紀錄，再 create_site_from_request(number)。取得網站自己的 repo 與工作分支後，才保存設計檔、素材、mockup 及前端程式。若原需求仍用 auto，後續選定的方向與色票記在這個 repo，保留原需求；需要補充的內容寫回原需求，不另開第二份或聲稱原答案已被改寫。
+用 get_started(number) 核對 request.answers、look、modules、files 與補充紀錄，再 create_site_from_request(number)；自行開發另帶 start_from（同類型的基本樣板 template_id，或 blank）。取得網站自己的 repo 與工作分支後，才保存設計檔、素材、mockup 及前端程式。若原需求仍用 auto，後續選定的方向與色票記在這個 repo，保留原需求；需要補充的內容寫回原需求，不另開第二份或聲稱原答案已被改寫。
 
 ## 沒有風格想法也能開始設計
 
@@ -45,4 +45,4 @@ name、pitch、business、type 與 selling_points 是送出需求的必要資料
 
 缺少 API 時記下受影響流程與待 Ovata 補足的能力，可先做明確標示的前端示意；不能造 API、假付款或另建後端補洞。真的要 Ovata 接手時先取得使用者對另行報價的同意，保留同一網站與 repo。
 
-跑合適的前端檢查、建置及主要流程，提供測試站網址與要檢查的操作。使用者可以在對話中提出修改，完成並在預覽上明確確認後，才按 ovata-workflow 發布正式站。
+交付預覽前，按 [ovata-site-code 的前端設計檢查](../SKILL.md#前端設計檢查) 實際套用 `frontend-design`，檢視桌機及手機畫面並留下結果。基本樣板維持使用者指定的標準區塊與簡約方向，不因設計檢查變成客製改版。再跑合適的前端檢查、建置及主要流程，提供測試站網址與要檢查的操作。使用者可以在對話中提出修改，完成並在預覽上明確確認後，才按 ovata-workflow 發布正式站。

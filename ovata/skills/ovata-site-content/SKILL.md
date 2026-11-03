@@ -1,6 +1,6 @@
 ---
 name: ovata-site-content
-description: 不改程式就能改的 Ovata 網站內容：商品、分類、優惠、文章、頁面上的字和圖、網站設定、自訂欄位、投稿、顧客匯入、訂單顧客訊息、餐廳設定與圖片上傳，用 get_backend_api_docs 與 site_backend 操作。要讀或改網站後台資料、匯入商品或上傳圖片時讀這份。
+description: 不改程式就能改的 Ovata 網站內容：商品、分類、優惠、文章、頁面上的字和圖、網站設定、自訂欄位、投稿、顧客匯入、訂單顧客訊息、餐廳設定與媒體上傳，用 get_backend_api_docs 與 site_backend 操作。要讀或改網站後台資料、匯入商品或上傳網站素材時讀這份。
 ---
 
 # 不改程式就能改的內容
@@ -11,7 +11,7 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 
 1. `get_backend_api_docs(site_id, environment, resource?)`：先讀格式、流程與範例。`resource` 可以是 `products`、`categories`、`content`、`pages`、`site`、`media`、`customFields`、`promotions`、`restaurant`、`submissions`、`customers`、`orders`、`orderMessages`、`customerImports`。
 2. `site_backend(site_id, environment, path, method, input?)`：用同一個網站與環境呼叫。`method` 是 `GET`、`POST`、`PUT`、`PATCH`，沒有 DELETE。
-3. 每次都要指定 `environment`：`production` 是正式站，`staging` 是測試站。兩邊的資料各一份，不會同步。
+3. 每次都要指定 `environment`：`production` 是正式站，`staging` 是測試站。兩邊的資料各一份，不會同步。樣板網站還沒上線時在 `staging` 準備，第一次上線會帶到正式站（訂單、會員不帶）。
 4. 先 `GET` 讀現在的資料、ID 與 `revision`，再寫入；保留原本的資料，只改要改的欄位。
 
 只有工作區管理員能用 `site_backend`。文章和留言另有專用工具（`list_posts`、`create_post`、`publish_post`、`list_comments`、`approve_comment`…），寫入要 `request_id`，更新與發布要目前的 `revision`。
@@ -26,6 +26,16 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 - `filename` 只放檔名（不含資料夾），商家的媒體庫會顯示它。
 - 回傳的 `data.src` 用在商品圖片、文章封面、分享圖片；`data.key` 用在頁面的圖片位置（pages 的 `setImage`）。
 - 先上傳圖片，再寫入用到圖片的資料。不要把 base64 印在對話裡。
+
+## 網站靜態素材
+
+- 站方管理的影片、音檔、PDF、字型與圖片直接放媒體庫，供網站重複引用；不要建立投稿、商品或文章來存這些檔案。訪客投稿仍使用投稿模組。
+- 先 GET `/api/admin/media/capabilities`。`resumable=false` 時需先明確升級這個網站的 `media.library` 後端功能，不能用投稿系統繞過。
+- MCP 用同一個 `site_backend` 的 `media`：帶 `content_type`、`filename`、UUID `operation_id`、`bytes`、完整小寫 `sha256`、`offset`、`data_base64`。每段 5 MiB 原始 bytes（最後可較短），依 `next_offset` 續傳；`complete=true` 才拿到可引用的 `key` 與 `src`。結果不明時沿用相同 metadata，空 `data_base64` 查進度，不換操作識別碼盲目重傳。上傳到期後才換新識別碼。
+- 圖片最大 8 MiB、MP4/WebM/MOV 影片 512 MiB、MP3/M4A/WAV/OGG 音檔 128 MiB、PDF 32 MiB、WOFF/WOFF2 字型 8 MiB，網站媒體庫總額 5 GiB。格式由實際內容驗證，不收 HTML、SVG 或程式。不要在對話印出 base64。
+- `data.src` 可直接放在網站的 `<video>`、`<audio>`、圖片、字型或下載連結；它屬於指定環境，測試與正式需各自上傳。素材上傳不用重新部署；改網站引用仍循測試站預覽流程。
+- 網站程式引用以 PUT `/api/admin/media/references` 的 `{ownerId,label,keys}` 登錄，一次替換該元件的全部引用。使用中的素材受刪除保護，後台會顯示元件名稱；元件移除素材時同步更新引用。
+- 管理端瀏覽器用 `@merchant-kit/sdk/media` 的 `createMediaClient` 與 `uploadMediaFile`，不要把管理權限放到公開前台。
 
 ## 大量匯入
 
@@ -59,3 +69,7 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 - 刪除資料、永久刪除投稿。
 
 工具回 `PATH_NOT_ALLOWED` 就是 MCP 不開放這個操作，請她到 Console；不要嘗試別的路徑繞過。
+
+## 投稿的社群貼文
+
+公開原文連結 `links` 接受 IG、Threads、TikTok 的完整影片或照片貼文網址。前台先 `session(collectionId)`，再用 SDK `resolveLink(collectionId,url)` 展開 TikTok 官方分享短網址；失敗時請貼完整公開網址。只回傳標準網址，不回傳第三方 HTML 或下載原片。直接顯示原貼文需使用平台官方嵌入；私密、刪除或禁止嵌入的貼文無法保證顯示，影片也可能需要點擊播放。訪客媒體仍是投稿，不放站方媒體庫。

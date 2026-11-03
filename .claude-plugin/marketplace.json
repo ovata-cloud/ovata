@@ -9,7 +9,7 @@
       "name": "ovata",
       "source": "./ovata",
       "description": "Ovata 網站擁有者的 AI 工具：照「測試站 → 確認 → 正式站」修改網站，並正確使用網站後端的 SDK。",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "category": "productivity"
     }
   ]
