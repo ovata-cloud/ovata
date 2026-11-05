@@ -11,7 +11,7 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 
 1. `get_backend_api_docs(site_id, environment, resource?)`：先讀格式、流程與範例。`resource` 可以是 `products`、`categories`、`content`、`pages`、`site`、`media`、`customFields`、`promotions`、`restaurant`、`submissions`、`customers`、`orders`、`orderMessages`、`customerImports`。
 2. `site_backend(site_id, environment, path, method, input?)`：用同一個網站與環境呼叫。`method` 是 `GET`、`POST`、`PUT`、`PATCH`，沒有 DELETE。
-3. 每次都要指定 `environment`：`production` 是正式站，`staging` 是測試站。兩邊的資料各一份，不會同步。樣板網站還沒上線時在 `staging` 準備，第一次上線會帶到正式站（訂單、會員不帶）。
+3. 每次都要指定 `environment`：`production` 是正式站，`staging` 是測試站。兩邊的資料各一份，不會同步；要把正式站的新圖文帶到測試站，用 `manage_staging` 的 `update_content`，它只寫測試站。舊樣板網站（`frontend_mode=template`）還沒上線時在 `staging` 準備，第一次上線會帶到正式站（訂單、會員不帶）。
 4. 先 `GET` 讀現在的資料、ID 與 `revision`，再寫入；保留原本的資料，只改要改的欄位。
 
 只有工作區管理員能用 `site_backend`。文章和留言另有專用工具（`list_posts`、`create_post`、`publish_post`、`list_comments`、`approve_comment`…），寫入要 `request_id`，更新與發布要目前的 `revision`。

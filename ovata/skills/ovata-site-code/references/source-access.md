@@ -1,6 +1,6 @@
 # 在 Codex 完成原始碼存取
 
-此流程適用有前台程式管理權的委託交付網站。樣板方案僅日常管理，不能以重新授權或 GitHub 邀請繞過方案。Git、工具與分支由 AI 處理；只有登入、OAuth 同意及 GitHub 接受邀請需要使用者本人確認。
+此流程適用有前台程式管理權的網站：自行開發與委託交付的網站。舊樣板網站僅日常管理，不能以重新授權或 GitHub 邀請繞過方案。Git、工具與分支由 AI 處理；只有登入、OAuth 同意及 GitHub 接受邀請需要使用者本人確認。
 
 ## 先核對本次連線
 
@@ -13,13 +13,13 @@
 
 `get_source_access(project_id)` 回傳正常 Console 入口、repo／工作分支、本人已連結的 GitHub 帳號、下一工具與完整協作流程。不要索取 GitHub 密碼或 token，也不要替使用者填一個任意 username 來開權限。
 
-| 結果 status | AI 接著做什麼 |
-| --- | --- |
-| `github_link_required` | 開啟 `settings_url`（有 Codex 瀏覽器時可在該瀏覽器開啟），定位「GitHub 原始碼存取」的「連結 GitHub」，請本人完成正常 OAuth；保留此對話，完成後重試同一個 `get_source_access`。不要聲稱邀請已寄出。 |
-| `invitation_required` | 向使用者展示 repo 與實際連結的 GitHub login。本人確認要開放後，呼叫 `sync_source_access(project_id, confirmed=true, expected_github_user_id)`；ID 用剛讀回的 `github.github_user_id`，不是使用者任意提供的 ID。 |
-| `invitation_pending` | 開啟 `invitation_url`，由本人用回傳的 GitHub 帳號接受邀請，再重查 `get_source_access`。不盲目重送邀請。 |
-| `ready` | 已確認 GitHub 寫入權限；由 AI clone repo 並切到工作分支，再依下方測試發布流程執行。 |
-| `project_not_ready` | 明確列出專案／原始碼尚未就緒，保留同一網站與 repo，透過需求請 Ovata 檢查。 |
+| 結果 status            | AI 接著做什麼                                                                                                                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `github_link_required` | 開啟 `settings_url`（有 Codex 瀏覽器時可在該瀏覽器開啟），定位「GitHub 原始碼存取」的「連結 GitHub」，請本人完成正常 OAuth；保留此對話，完成後重試同一個 `get_source_access`。不要聲稱邀請已寄出。              |
+| `invitation_required`  | 向使用者展示 repo 與實際連結的 GitHub login。本人確認要開放後，呼叫 `sync_source_access(project_id, confirmed=true, expected_github_user_id)`；ID 用剛讀回的 `github.github_user_id`，不是使用者任意提供的 ID。 |
+| `invitation_pending`   | 開啟 `invitation_url`，由本人用回傳的 GitHub 帳號接受邀請，再重查 `get_source_access`。不盲目重送邀請。                                                                                                         |
+| `ready`                | 已確認 GitHub 寫入權限；由 AI clone repo 並切到工作分支，再依下方測試發布流程執行。                                                                                                                             |
+| `project_not_ready`    | 明確列出專案／原始碼尚未就緒，保留同一網站與 repo，透過需求請 Ovata 檢查。                                                                                                                                      |
 
 `SOURCE_IDENTITY_CHANGED`、`SOURCE_IDENTITY_CONFLICT` 或 `SOURCE_ACCESS_CHANGED` 時停止同步，重新讀本人連結，核對確認的帳號；不可改成邀請另一個帳號。結果不明先 `get_source_access`，確定仍需邀請才以同一專案及同一已確認身分重試。平台重用既有待接受邀請；有效寫入權限也不重送。
 

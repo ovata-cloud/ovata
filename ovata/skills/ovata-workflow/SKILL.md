@@ -21,19 +21,21 @@ description: 幫使用者在 Codex 或 Claude Code 對話整理建站需求，�
 
 網站 repo 不另建會員驗證、訂單、金流或物流服務，也不另存這些業務資料。不要要求使用者貼金流金鑰或自行接付款商；金鑰由使用者在 Console 的既有設定操作。需求超出現有 API 時列明缺項與可做的前端範圍，讓使用者決定先保留或委託 Ovata，不能假造 API、付款成功或另做後端補洞。
 
-## 先選類型，再選方式
+## 先選類型，再選起點
 
-先問網站類型：電商網站（shop）、點餐系統（dining）或形象網站（brand）；功能跟著類型固定。再讓使用者選方式：
+先問網站類型：電商網站（shop）、點餐系統（dining）或形象網站（brand）；功能跟著類型固定。再問要從哪裡開始：
 
-- 套用樣板：只問樣板和網站名稱。先 `list_site_templates` 選這個類型的基本樣板，`request_site(delivery_mode="self_service", template_id, answers={type, name}, operation_id)` 保存，再 `create_site_from_request(number)` 建立。MCP 僅日常管理，不讀寫網站程式、不建置與發布程式，之後也不能轉成自行開發。
-- 自行開發：逐步整理完整需求（品牌現況與來源、參考、風格、色系、可查證賣點、店家資料），`request_site(delivery_mode="self_build", answers, operation_id)` 保存，再 `create_site_from_request(number, start_from)` 建站：start_from 是這個類型的基本樣板 template_id，或 `blank` 從空白開始。程式從一開始就開放，由你照需求製作。
-- 委託 Ovata：同樣整理完整需求，`request_site(delivery_mode="ovata", answers, operation_id)`，由 Ovata 提案、另行報價。完成交付後才開放擁有者的前台程式管理；送出需求、轉交或付款本身不會立即開放。
+- 從樣板開始：先 `list_site_templates` 選這個類型的基本樣板，`request_site(delivery_mode="self_build", template_id, answers={type, name}, operation_id)` 保存，再 `create_site_from_request(number)` 複製一份成使用者自己的網站。程式全部開放。
+- 從空白開始：`request_site(delivery_mode="self_build", answers={type, name}, operation_id)` 保存，再 `create_site_from_request(number, start_from="blank")` 建站。程式全部開放。
+- 委託 Ovata：逐步整理完整需求書（品牌現況與來源、參考、風格、色系、可查證賣點、店家資料），`request_site(delivery_mode="ovata", answers, operation_id)`。使用者到 Console 付樣稿費 NT$2,000，Ovata 才開始做；看過樣稿可以付尾款做整站（樣稿費可抵），也可以拿樣稿自己做，同一網站變成上面兩種之一。完成交付後才開放擁有者的前台程式管理；送出需求、轉交或付款本身不會立即開放。
+
+從樣板或空白開始時，建好網站再問品牌、商品、風格與想要的頁面（[需求與設計](../ovata-site-code/references/requirements-and-design.md)），問清楚才動手。
 
 可在 Agent 對話進行，已有資料直接沿用，不強迫回 Console 填表。上線時的網址（電商、形象網站選網域；點餐用 店名.ovata.tw）與付款，由擁有者在 Console 的需求頁按「上線」處理。
 
-月費依類型：電商網站線上收款 1.2%（每月最低 NT$199，含 5 個公司信箱）、點餐系統每月 NT$999（年繳 NT$9,999）、形象網站每月 NT$499（年繳 NT$4,999，含 5 個公司信箱）；網域每年 NT$1,999。委託另收製作費，委託的形象網站每月 NT$2,000。不承諾零元建置。
+月費依類型：電商網站線上收款 1.2%（每月最低 NT$199，含 5 個公司信箱）、點餐系統每月 NT$999（年繳 NT$9,999）、形象網站每月 NT$499（年繳 NT$4,999，含 5 個公司信箱）；網域每年 NT$1,999。委託先付樣稿 NT$2,000，滿意再付製作費尾款（電商、點餐 NT$20,000 起，形象官網 NT$50,000 起），委託的形象網站每月 NT$2,000。
 
-樣板或自行開發想改由 Ovata 製作，先說明另行報價並取得同意，再 `handoff_site_request`；已上線用 `request_change`。保留同一網站與進度。樣板版型不符或缺功能時不能以直接改 repo、重連 OAuth 或自建後端繞過限制。
+想改由 Ovata 製作，先說明另行報價並取得同意，再 `handoff_site_request`；已上線用 `request_change`。保留同一網站與進度。2026-11-03 以前建立的舊樣板網站（`frontend_mode=template`）維持僅日常管理，不能以直接改 repo、重連 OAuth 或自建後端繞過限制。
 
 以下程式開發流程適用 `frontend_mode=custom` 且 `check_development` 確認有權限的網站：自行開發的網站，以及已交付的委託網站。設計與程式一律放網站自己的 repo，先核對 get_project，再規劃與修改。
 
@@ -67,8 +69,10 @@ MCP 只會發布上過測試站的版本（或以前上線過的版本，用來�
 
 - 商品、文章、訂單、會員、媒體在兩邊各一份，不會互相同步。在測試站建的商品，正式站看不到。
 - 發布時會帶到正式站的只有自訂欄位的定義和投稿區設定（`latest_release.settings_sync` 列出帶了什麼）。這些在測試站改好，再發布。
-- 樣板網站例外一次：上線前商品、菜單、文章、頁面內容和媒體都在測試站（`staging`）準備，第一次上線時平台把它們帶到正式站，訂單和會員不帶。上線後就在 `production` 管理。
+- 舊樣板網站（`frontend_mode=template`）例外一次：上線前商品、菜單、文章、頁面內容和媒體都在測試站（`staging`）準備，第一次上線時平台把它們帶到正式站，訂單和會員不帶。上線後就在 `production` 管理。
 - 要改正式站的內容，就指定 `environment: "production"`；想先試試看，用 `staging`。
+- 測試站是開發用的，放測試資料就好，不用跟正式站一樣。新網站的真實商品和內容放 `production`，上線前沒有對外網址，別人看不到。
+- 要把正式站新的圖片、商品、文章、頁面文字和條款帶到測試站，用 `manage_staging` 的 `update_content`（Console 環境與版本的測試環境也有「從正式站更新」）。它在背景跑，只寫測試站：同一筆以正式站為準，測試站自己加的內容、庫存、優惠、訂單、會員和結帳設定不動。進度看 `manage_staging` `status` 的 `content_update`。改程式不需要先做這一步。
 - 後端功能版本（`get_merchant_backend`）也一樣：先升級測試環境，在測試站確認後再升級正式環境。
 
 ## 出問題時

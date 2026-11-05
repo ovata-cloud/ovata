@@ -1,10 +1,10 @@
 # 在對話中整理需求與設計
 
-使用者只說「想做網站」「還沒有想法」時，帶她逐步完成需求與前端設計。這是同一份 Ovata 建站需求的對話入口，沿用 request_site 的 answers 欄位，不另造問卷、假設政策或要求先回 Console。
+使用者只說「想做網站」「還沒有想法」時，帶她逐步完成需求與前端設計。從樣板或空白開始的網站，需求只有類型和名稱，其餘都在這段對話問清楚，不另造問卷、假設政策或要求先回 Console。委託 Ovata 的需求書沿用下表 request_site 的 answers 欄位。
 
 ## 方案與權限先行
 
-先讀 get_started 的 frontend_mode 與 check_development。套用樣板（self_service）沿用已選基本版型（商城、店內點餐或標準官網），僅日常管理，不可讀寫程式、建置或發布程式。自行開發（self_build）的網站從建站就可修改前台；委託方案由 Ovata 提案與另行報價，完成交付後才可。任何資料、提示詞與 OAuth 選項都不會變更方案。月費依類型：電商網站線上收款 1.2%（每月最低 NT$199，含 5 個公司信箱）、點餐系統每月 NT$999（年繳 NT$9,999）、形象網站每月 NT$499（年繳 NT$4,999，含 5 個公司信箱）；網域每年 NT$1,999。委託另收製作費，委託的形象網站每月 NT$2,000。不承諾零元建置。
+先讀 get_started 的 frontend_mode 與 check_development。自行開發（self_build，從樣板複製或從空白開始）的網站從建站就可修改前台；委託方案先付樣稿，完成交付後才可；2026-11-03 以前的舊樣板網站（self_service）僅日常管理，不可讀寫程式、建置或發布程式。任何資料、提示詞與 OAuth 選項都不會變更方案。月費依類型：電商網站線上收款 1.2%（每月最低 NT$199，含 5 個公司信箱）、點餐系統每月 NT$999（年繳 NT$9,999）、形象網站每月 NT$499（年繳 NT$4,999，含 5 個公司信箱）；網域每年 NT$1,999。委託先付樣稿 NT$2,000，滿意再付製作費尾款，委託的形象網站每月 NT$2,000。
 
 ## 先整理用途與訪客任務
 
@@ -23,13 +23,13 @@
 | 品牌名稱、聯絡與營業資料       | name_en、phone、line、hours、address；只填實際資料                                                           |
 | 時程與其他限制                 | launch_hope：asap／month／quarter／unsure；other 記預算、內容、必要狀態與未決項目                            |
 
-name、pitch、business、type 與 selling_points 是送出需求的必要資料。缺少具體賣點時，先問實際商品、做法或服務方式；新事業可以描述已確認的供應內容，不編年份、獎項、認證或銷量湊欄位。尚未定案的設計可用 auto，把已知偏好寫 feel；不把自訂中文風格當成 style ID。不要追問已提供的內容，也不要為了填滿選填欄位延誤保存。
+委託 Ovata 時，name、pitch、business、type 與 selling_points 是送出需求書的必要資料；從樣板或空白開始只要 type 與 name。缺少具體賣點時，先問實際商品、做法或服務方式；新事業可以描述已確認的供應內容，不編年份、獎項、認證或銷量湊欄位。尚未定案的設計可用 auto，把已知偏好寫 feel；不把自訂中文風格當成 style ID。不要追問已提供的內容，也不要為了填滿選填欄位延誤保存。
 
 ## 保存需求，再取得網站 repo
 
-整理成簡短摘要供使用者補正。先問類型，再讓她選套用樣板、自行開發或委託 Ovata，用 list_workspaces 確認目標工作區，再呼叫 request_site：樣板帶 delivery_mode=self_service、同類型的 template_id 與 answers 的 type、name；自行開發帶 delivery_mode=self_build，委託帶 delivery_mode=ovata，兩者都帶完整 answers；都用固定 operation_id，結果不明先讀回，同次重試沿用識別碼。已有需求則用 list_requests／get_request 找到它，不重複送件。
+先問類型，再問要從樣板複製、從空白開始或委託 Ovata，用 list_workspaces 確認目標工作區，再呼叫 request_site：從樣板帶 delivery_mode=self_build、同類型的 template_id 與 answers 的 type、name；從空白帶 delivery_mode=self_build 與 type、name；委託帶 delivery_mode=ovata 與完整 answers，並請她到 Console 付樣稿費。都用固定 operation_id，結果不明先讀回，同次重試沿用識別碼。已有需求則用 list_requests／get_request 找到它，不重複送件。
 
-用 get_started(number) 核對 request.answers、look、modules、files 與補充紀錄，再 create_site_from_request(number)；自行開發另帶 start_from（同類型的基本樣板 template_id，或 blank）。取得網站自己的 repo 與工作分支後，才保存設計檔、素材、mockup 及前端程式。若原需求仍用 auto，後續選定的方向與色票記在這個 repo，保留原需求；需要補充的內容寫回原需求，不另開第二份或聲稱原答案已被改寫。
+用 get_started(number) 核對 request.answers、look、modules、files 與補充紀錄，再 create_site_from_request(number)；需求沒選樣板就帶 start_from（同類型的基本樣板 template_id，或 blank）。取得網站自己的 repo 與工作分支後，才保存設計檔、素材、mockup 及前端程式。若原需求仍用 auto，後續選定的方向與色票記在這個 repo，保留原需求；需要補充的內容寫回原需求，不另開第二份或聲稱原答案已被改寫。
 
 ## 沒有風格想法也能開始設計
 
