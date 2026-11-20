@@ -42,12 +42,14 @@ description: 將網站前端透過 SDK 接上 Ovata 維護的商品、訂單、�
 
 - 商品：`products.list(filter)`、`products.get(id)`。`price` 是現在結帳的價格；`price < regularPrice` 才顯示劃線原價。
 - 購物袋：`cart.get()` 已經算好優惠、加價購與免運進度；`cart.update(revision, action)` 遇到 `REVISION_CONFLICT` 就重讀再送。
+- 折扣碼：購物袋有 `promotionCodes: true`（商店有能用的碼）或已經有 `promotionCode` 時，在購物袋或結帳頁放折扣碼輸入框；沒有這兩個欄位的商店（後端還沒升級）就不放。輸入用 `cart.update(revision, { type: 'code', code })`，拿掉用 `code: null`；不能用時照 `error` 顯示在輸入框下（`PROMOTION_CODE_*`）。輸入後顯示 `promotionCode.message`（「已折 NT$ 100」「還差 NT$ 300 才能使用」等），`state` 為 `invalid` 時提供「移除」。折扣金額看 `discount`、`discounts`，不要自己算。
+- 限定付款與配送：優惠可以只限某些付款或配送方式（例如限信用卡、限 7-ELEVEN）。購物袋頁讀 `cart.get({})`；結帳頁讀 `cart.get({ payment, shipping })`（顧客選的付款方式與配送方式 id，還沒選為 null），顧客改選時重讀，重畫折扣與金額，snapshotHash 變了就重新報價。`promotions` 裡帶 `unmet` 的優惠還差顧客選對方式，把它的 `note` 顯示在摘要裡（「結帳選「信用卡（綠界）」付款，可折 NT$ 100」）。輸入折扣碼用 `cart.update(revision, action, {})`。報價與結帳用同一個選擇讀到的 snapshotHash。
 - 結帳：
   1. 要運送的購物袋先用 `createShippingClient().options()` 與 `quote(input)` 取得 `quoteId`。
   2. `checkout.confirm({ idempotencyKey, snapshotHash, shipping: { quoteId } })` 建立訂單，回傳要怎麼付款（`kind`：`form`、`redirect`、`manual`，不認得的就帶顧客到訂單頁）。
   3. 付款完回到 `/checkout?order=<id>`，網站一定要有這個頁面：先 `orders.syncPayment(id)`，再 `orders.get(id)` 顯示結果。不要只看網址參數就說付款成功。
 - 會員寄售：`createConsignmentClient()` 查改登入會員自己的寄售、上傳商品照片／私人照片、送審與撤回；先明確升級 `commerce.consignments`。名稱、說明、售價之外要問的（品牌、尺寸、來源、撥款方式…）是商店的商品自訂欄位，勾「寄售會員可填」，表單用 `fields()` 畫、值放 `customFields`；不公開的欄位只有會員本人與後台看得到。會員不可設定審核結果或上架狀態，管理員在 Console「寄售審核」要求補件或核准並上架；審核中與核准後商店也能改資料與售價、補店家照片、排商品圖順序、重新上架，記在寄售的 `events`（`edit` 帶 `changes`），網站在會員的寄售詳情列出。商品清單沿用 `products.list`（單件，`variants[0].stock` 為 0 就是已售出或交易中）。會員自己的寄售有 `sale`：`available` 可售、`pending` 交易中、`sold` 已售出（`soldAt`、`shipTo` 是要寄到的店家地址，沒填為 null）；寄件期限等規則由網站自己寫。審核結果與售出依商店「Email 通知」寄信給會員。分潤與購物金結算不由寄售 API 執行。
-- 會員：`createCustomerClient()` 的 `me()`、`password.login()`、`orders()`、`updateMe()`。
+- 會員：`createCustomerClient()` 的 `me()`、`password.login()`、`orders()`、`updateMe()`。會員頁在「我的訂單」下面放「先前的購買紀錄」：`importedRecords()` 是商店從原平台（例如 SHOPLINE）匯入的訂單數、累計消費和加入時間，`vendor/sdk.js` 的 `importedRecordLine(record, money)` 把一筆組成一行字；沒有匯入過就不顯示。顧客用匯入時的 Email 註冊或登入後就會自動有內容，不用另外處理。
 - 密碼註冊與重設：`password.register(email)`、`password.forgot(email)` 會寄信，連結固定是網站的 `/account/verify#token=…&purpose=…`，開放密碼登入的網站一定要有這個頁面。開頁後從 fragment 讀出 `token` 與 `purpose`（`vendor/sdk.js` 的 `accountProof(location.hash)`），立刻用 `history.replaceState` 把 fragment 從網址拿掉，不存進瀏覽器，也不送分析工具；再顯示設定密碼的表單（`register` 另要填姓名），送 `password.confirm({ token, purpose, password, name })`，成功後請顧客重新登入。
 - 頁面內容：`pages.get(pageKey)` 讀商家在 Console 改的字和圖；哪些欄位可以換，由網站程式用 `pages.sync` 登錄（格式見 `get_backend_api_docs` 的 `pages`）。
 - 自訂欄位：`GET /api/v1/custom-fields?resource=…` 取得網站能用的欄位來畫表單。欄位定義在測試站改，發布時會帶到正式站。

@@ -31,9 +31,9 @@ description: 幫使用者在 Codex 或 Claude Code 對話整理建站需求，�
 
 從樣板或空白開始時，建好網站再問品牌、商品、風格與想要的頁面（[需求與設計](../ovata-site-code/references/requirements-and-design.md)），問清楚才動手。
 
-可在 Agent 對話進行，已有資料直接沿用，不強迫回 Console 填表。上線時的網址（電商、形象網站選網域；點餐用 店名.ovata.tw）與付款，由擁有者在 Console 的需求頁按「上線」處理。
+可在 Agent 對話進行，已有資料直接沿用，不強迫回 Console 填表。上線時的網址（電商、形象網站選網域，或先用 名稱.ovata.tw、之後再接網域；點餐用 店名.ovata.tw）與付款，由擁有者在 Console 打開網站、在總覽按「上線」處理。上線後要接網域，用 site_domain 查網域並取得 Console 付款連結給擁有者（MCP 不付款），付款後平台自動買、轉移或等 nameserver，好了就設成網站的主要網址。
 
-月費依類型：電商網站線上收款 1.2%（每月最低 NT$199，含 5 個公司信箱）、點餐系統每月 NT$999（年繳 NT$9,999）、形象網站每月 NT$499（年繳 NT$4,999，含 5 個公司信箱）；網域每年 NT$1,999。委託先付樣稿 NT$2,000，滿意再付製作費尾款（電商、點餐 NT$20,000 起，形象官網 NT$50,000 起），委託的形象網站每月 NT$2,000。
+每個網站每月 NT$199，不分類型、按月付款、不抽成，從正式站上線開始收，測試站免費；電商網站與形象網站含 5 個公司信箱。網域選用，每年 NT$1,999。委託先付樣稿 NT$2,000，滿意再付製作費尾款（電商、點餐 NT$20,000 起，形象官網 NT$50,000 起）；委託的網站做好時，擁有者在 Console 的需求頁按「上線」付月費就上線。
 
 想改由 Ovata 製作，先說明另行報價並取得同意，再 `handoff_site_request`；已上線用 `request_change`。保留同一網站與進度。2026-11-03 以前建立的舊樣板網站（`frontend_mode=template`）維持僅日常管理，不能以直接改 repo、重連 OAuth 或自建後端繞過限制。
 
@@ -46,7 +46,7 @@ description: 幫使用者在 Codex 或 Claude Code 對話整理建站需求，�
 | 商品、價格、庫存、分類、優惠     | Console，或 `site_backend`（見 ovata-site-content） | 不用                |
 | 文章、留言、投稿                 | Console，或文章、留言工具與 `site_backend`          | 不用                |
 | 頁面上可換的字、圖、SEO          | Console「頁面內容」，或 `site_backend` 的 pages     | 不用，存草稿後發布  |
-| 金流、物流、結帳設定             | 請她在 Console「結帳設定」操作，金鑰只能在那裡填    | 不用                |
+| 金流、物流、結帳設定             | 金鑰請她在 Console 填；其餘可用 `site_backend`      | 不用                |
 | 版面、樣式、新頁面、新功能、修錯 | 改網站程式（見 ovata-site-code）                    | 要：測試站 → 正式站 |
 | 做不到或沒把握                   | `request_change` 請 Ovata 修改                      | Ovata 處理          |
 
@@ -72,7 +72,7 @@ MCP 只會發布上過測試站的版本（或以前上線過的版本，用來�
 - 舊樣板網站（`frontend_mode=template`）例外一次：上線前商品、菜單、文章、頁面內容和媒體都在測試站（`staging`）準備，第一次上線時平台把它們帶到正式站，訂單和會員不帶。上線後就在 `production` 管理。
 - 要改正式站的內容，就指定 `environment: "production"`；想先試試看，用 `staging`。
 - 測試站是開發用的，放測試資料就好，不用跟正式站一樣。新網站的真實商品和內容放 `production`，上線前沒有對外網址，別人看不到。
-- 要把正式站新的圖片、商品、文章、頁面文字和條款帶到測試站，用 `manage_staging` 的 `update_content`（Console 環境與版本的測試環境也有「從正式站更新」）。它在背景跑，只寫測試站：同一筆以正式站為準，測試站自己加的內容、庫存、優惠、訂單、會員和結帳設定不動。進度看 `manage_staging` `status` 的 `content_update`。改程式不需要先做這一步。
+- 要把正式站每個頁面的文字和圖片（含全站共用）與條款帶到測試站，用 `manage_staging` 的 `update_content`（Console 環境與版本的測試環境也有「從正式站更新」）。它在背景跑，只寫測試站：頁面以正式站為準，商品、文章、庫存、優惠、訂單、會員和結帳設定不動。進度看 `manage_staging` `status` 的 `content_update`。改程式不需要先做這一步。
 - 後端功能版本（`get_merchant_backend`）也一樣：先升級測試環境，在測試站確認後再升級正式環境。
 
 ## 出問題時
