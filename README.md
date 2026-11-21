@@ -38,7 +38,7 @@ MCP 網址是 `https://platform-api.ovata.tw/mcp`。沒裝 skills 也可以用�
   url = "https://platform-api.ovata.tw/mcp"
   ```
 
-- Claude Code：`claude mcp add --transport http ovata https://platform-api.ovata.tw/mcp`
+- Claude Code：`claude mcp add --transport http --scope user ovata https://platform-api.ovata.tw/mcp`
 - Claude 桌面版、claude.ai：設定 › Connectors › 新增自訂 connector，貼上網址。
 
 plugin 和單獨的 MCP 連線擇一即可，兩個都設定會出現重複的工具。
