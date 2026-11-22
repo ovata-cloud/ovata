@@ -16,6 +16,8 @@ description: 不改程式就能改的 Ovata 網站內容：商品、分類、優
 
 只有工作區管理員能用 `site_backend`。文章和留言另有專用工具（`list_posts`、`create_post`、`publish_post`、`list_comments`、`approve_comment`…），寫入要 `request_id`，更新與發布要目前的 `revision`。
 
+電子報是一篇「同步發布電子報」的文章，寄件地址是網站自己網域的 `news@網域`，沒有自己網域的網站不能寄。用 `draft_newsletter` 寫草稿（`categoryId` 必填），`prepare_newsletter_send` 看實際寄出的信、寄件人與收件人數，把預覽完整給使用者看；使用者明確說要寄出這一封，才用同一個 `confirmation_id` 呼叫 `send_newsletter`。只想寄信、不放上網站時，prepare 帶 `email_only=true`：信裡是全文，文章維持草稿。寄出後不能收回；結果不明時只用同一個 `confirmation_id` 重試。`get_newsletter` 看訂閱人數、寄送狀態與本月上限。
+
 ## 結果不明時
 
 回傳是 `{ status, data }`。`status: "outcome_unknown"` 表示寫入可能已經成功：先讀回資料核對，再決定要不要重送，不要直接重送。
