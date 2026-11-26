@@ -40,7 +40,7 @@ description: 將網站前端透過 SDK 接上 Ovata 維護的商品、訂單、�
 
 ## 常見流程
 
-- 商品：`products.list(filter)`、`products.get(id)`。`price` 是現在結帳的價格；`price < regularPrice` 才顯示劃線原價。
+- 商品：`products.list(filter)`、`products.get(id)`。`price` 是現在結帳的價格；`price < regularPrice` 才顯示劃線原價。列表的 `position` 是在這次查的清單裡第幾個，`category.position` 是在自己分類裡第幾個：讀一次全部商品就能排好每個分類。
 - 購物袋：`cart.get()` 已經算好優惠、加價購與免運進度；`cart.update(revision, action)` 遇到 `REVISION_CONFLICT` 就重讀再送。
 - 折扣碼：購物袋有 `promotionCodes: true`（商店有能用的碼）或已經有 `promotionCode` 時，在購物袋或結帳頁放折扣碼輸入框；沒有這兩個欄位的商店（後端還沒升級）就不放。輸入用 `cart.update(revision, { type: 'code', code })`，拿掉用 `code: null`；不能用時照 `error` 顯示在輸入框下（`PROMOTION_CODE_*`）。輸入後顯示 `promotionCode.message`（「已折 NT$ 100」「還差 NT$ 300 才能使用」等），`state` 為 `invalid` 時提供「移除」。折扣金額看 `discount`、`discounts`，不要自己算。
 - 限定付款與配送：優惠可以只限某些付款或配送方式（例如限信用卡、限 7-ELEVEN）。購物袋頁讀 `cart.get({})`；結帳頁讀 `cart.get({ payment, shipping })`（顧客選的付款方式與配送方式 id，還沒選為 null），顧客改選時重讀，重畫折扣與金額，snapshotHash 變了就重新報價。`promotions` 裡帶 `unmet` 的優惠還差顧客選對方式，把它的 `note` 顯示在摘要裡（「結帳選「信用卡（綠界）」付款，可折 NT$ 100」）。輸入折扣碼用 `cart.update(revision, action, {})`。報價與結帳用同一個選擇讀到的 snapshotHash。
