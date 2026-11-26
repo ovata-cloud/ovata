@@ -52,7 +52,7 @@ description: 將網站前端透過 SDK 接上 Ovata 維護的商品、訂單、�
 - 會員：`createCustomerClient()` 的 `me()`、`password.login()`、`orders()`、`updateMe()`。會員頁在「我的訂單」下面放「先前的購買紀錄」：`importedRecords()` 是商店從原平台（例如 SHOPLINE）匯入的訂單數、累計消費和加入時間，`vendor/sdk.js` 的 `importedRecordLine(record, money)` 把一筆組成一行字；沒有匯入過就不顯示。顧客用匯入時的 Email 註冊或登入後就會自動有內容，不用另外處理。
 - 密碼註冊與重設：`password.register(email)`、`password.forgot(email)` 會寄信，連結固定是網站的 `/account/verify#token=…&purpose=…`，開放密碼登入的網站一定要有這個頁面。開頁後從 fragment 讀出 `token` 與 `purpose`（`vendor/sdk.js` 的 `accountProof(location.hash)`），立刻用 `history.replaceState` 把 fragment 從網址拿掉，不存進瀏覽器，也不送分析工具；再顯示設定密碼的表單（`register` 另要填姓名），送 `password.confirm({ token, purpose, password, name })`，成功後請顧客重新登入。
 - 圖片：媒體庫的檔案（`/api/media/uploads/…`）在網頁上一律加 `?w=寬度`（160、320、480、640、960、1280、1920、2560），拿壓縮過的 WebP，`<img>` 用 `srcset` 與 `sizes`；不帶 `w` 是上傳的原檔，可能好幾 MB。做法見 ovata-site-code 的網頁速度。
-- 頁面內容：`pages.get(pageKey)` 讀商家在 Console 改的字和圖；哪些欄位可以換，由網站程式用 `pages.sync` 登錄（格式見 `get_backend_api_docs` 的 `pages`）。
+- 頁面內容：`pages.get(pageKey)` 讀商家在 Console 改的字和圖，好幾頁一起要時用 `pages.getMany(pageKeys)` 一次讀（最多 50 頁）；哪些欄位可以換，由網站程式用 `pages.sync` 登錄（格式見 `get_backend_api_docs` 的 `pages`）。
 - 自訂欄位：`GET /api/v1/custom-fields?resource=…` 取得網站能用的欄位來畫表單。欄位定義在測試站改，發布時會帶到正式站。
 - 文章：`createContentClient().list(filter)`、`get(slug)`。
 
